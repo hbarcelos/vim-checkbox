@@ -6,7 +6,7 @@
 " Copyright:        Copyright (C) 2010-2018 by Jonas Kramer. Published under the
 "                   terms of the Artistic License 2.0.
 " Fork Notice:      Modified fork of jkramer/vim-checkbox.
-"                   See README.markdown for documented differences from the
+"                   See README for documented differences from the
 "                   original implementation.
 " License:          See LICENSE.
 " Help:             :help vim-checkbox
