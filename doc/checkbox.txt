@@ -1,0 +1,172 @@
+*checkbox.txt*   Vim Checkbox help file
+
+Vim Checkbox                                     *vim-checkbox* *checkbox*
+
+Author: Jonas Kramer, Henrique Barcelos
+
+This plugin toggles Markdown checkboxes and Markdown strikethrough on the
+current line. In this fork, the plugin is loaded from
+`after/ftplugin/markdown/checkbox.vim`, so it is intended for Markdown
+buffers.
+
+==============================================================================
+CONTENTS                                                *checkbox-contents*
+
+1. Introduction ........................................ |checkbox-intro|
+2. Commands ............................................ |checkbox-commands|
+3. Mappings ............................................ |checkbox-mappings|
+4. Configuration ....................................... |checkbox-config|
+5. Behavior ............................................ |checkbox-behavior|
+6. Repeat support ...................................... |checkbox-repeat|
+
+==============================================================================
+1. Introduction                                           *checkbox-intro*
+
+The plugin provides two actions:
+
+- Toggle or insert a checkbox on the current line.
+- Toggle Markdown strikethrough for the current list item's text.
+
+With the default settings, checkbox states cycle like this:
+
+    [ ] -> [x] -> [ ]
+
+Example: >
+    - task      -> - [ ] task
+    - [ ] task  -> - [x] task
+<
+
+The strikethrough action preserves the list prefix and any checkbox already
+present: >
+    - [ ] task      -> - [ ] ~~task~~
+    - [x] ~~task~~  -> - [x] task
+    + task          -> + ~~task~~
+    1. task         -> 1. ~~task~~
+    1) ~~task~~     -> 1) task
+<
+
+==============================================================================
+2. Commands                                             *checkbox-commands*
+
+:ToggleOrInsertCheckbox                                 *:ToggleOrInsertCheckbox*
+    Toggle the first configured checkbox marker on the current line.
+
+    If no checkbox is present and |g:checkbox_insert| is not empty, insert a
+    new checkbox with the first value from |g:checkbox_states|.
+
+:ToggleCheckboxStrikethrough                           *:ToggleCheckboxStrikethrough*
+    Toggle Markdown `~~...~~` on the text of the current Markdown list item.
+
+    Supported list prefixes include unordered markers (`-`, `+`, `*`),
+    ordered markers (`1.` and `1)` forms), indentation, and blockquote
+    prefixes.
+
+==============================================================================
+3. Mappings                                             *checkbox-mappings*
+
+The plugin defines these `<Plug>` mappings:
+
+<Plug>(checkbox-toggle-or-insert)                      *checkbox-plug-toggle*
+<Plug>(checkbox-toggle-strikethrough)              *checkbox-plug-strikethrough*
+
+Default mappings, when |g:checkbox_create_mappings| is enabled:
+
+<Leader>tt                                            *checkbox-default-toggle*
+    Calls `<Plug>(checkbox-toggle-or-insert)`.
+
+<Leader>ts                                   *checkbox-default-strikethrough*
+    Calls `<Plug>(checkbox-toggle-strikethrough)`.
+
+To disable the defaults and define your own mappings: >
+    let g:checkbox_create_mappings = 0
+    nmap <silent> <leader>oo <Plug>(checkbox-toggle-or-insert)
+    nmap <silent> <leader>os <Plug>(checkbox-toggle-strikethrough)
+<
+
+==============================================================================
+4. Configuration                                          *checkbox-config*
+
+g:checkbox_states                                      *g:checkbox_states*
+    List of single-character checkbox states. Default: >
+        let g:checkbox_states = [' ', 'x']
+<
+    Example with an extra state: >
+        let g:checkbox_states = [' ', 'x', '-']
+<
+    This yields: >
+        [ ] -> [x] -> [-] -> [ ]
+<
+
+g:checkbox_insert                                      *g:checkbox_insert*
+    Pattern used when the current line does not already contain a checkbox.
+    Default: >
+        let g:checkbox_insert = '\<'
+<
+    In this fork, the default behaves in a Markdown-aware way. It inserts the
+    checkbox at the start of the line's content, after indentation, blockquote
+    markers, or list markers.
+
+    Examples: >
+        [Project board](https://example.com)
+        - [Project board](https://example.com)
+        > [Project board](https://example.com)
+<
+    become: >
+        [ ] [Project board](https://example.com)
+        - [ ] [Project board](https://example.com)
+        > [ ] [Project board](https://example.com)
+<
+    Other useful values: >
+        let g:checkbox_insert = '^'
+        let g:checkbox_insert = '$'
+<
+    Disable insertion entirely with: >
+        let g:checkbox_insert = ''
+<
+
+g:checkbox_insert_prefix                        *g:checkbox_insert_prefix*
+g:checkbox_insert_suffix                        *g:checkbox_insert_suffix*
+    Text added before and after a newly inserted checkbox. Defaults: >
+        let g:checkbox_insert_prefix = ''
+        let g:checkbox_insert_suffix = ' '
+<
+
+g:checkbox_create_mappings                      *g:checkbox_create_mappings*
+    Controls whether the default mappings are created. Default: >
+        let g:checkbox_create_mappings = 1
+<
+
+==============================================================================
+5. Behavior                                        *checkbox-behavior*
+
+Checkbox detection
+    The plugin only treats standalone markers matching |g:checkbox_states| as
+    checkboxes. Bracketed text inside Markdown links is not treated as a
+    checkbox.
+
+    Example: >
+        - [x](https://example.com)
+<
+    becomes: >
+        - [ ] [x](https://example.com)
+<
+    rather than toggling the link label.
+
+Markdown scope
+    This plugin is installed under `after/ftplugin/markdown`, so it is meant
+    to run for Markdown filetypes.
+
+Strikethrough scope
+    The strikethrough command operates on Markdown list items only. Plain
+    non-list lines are left unchanged.
+
+==============================================================================
+6. Repeat support                                      *checkbox-repeat*
+
+If |repeat.txt| from `tpope/vim-repeat` is installed, both `<Plug>` mappings
+can be repeated with `.`.
+
+The plugin calls `repeat#set()` after each successful action, so custom maps
+should target the `<Plug>` mappings if you want repeat support.
+
+vim:tw=78:ts=8:noet:ft=help:norl:
